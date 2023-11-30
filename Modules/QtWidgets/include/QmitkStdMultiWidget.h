@@ -24,6 +24,8 @@ found in the LICENSE file.
 class MITKQTWIDGETS_EXPORT QmitkStdMultiWidget : public QmitkAbstractMultiWidget
 {
   Q_OBJECT
+protected:
+  mitk::StdFunctionCommand::ActionFunction SetCrosshairSynchronizedAction();
 
 public:
   QmitkStdMultiWidget(
@@ -32,7 +34,7 @@ public:
     const QString &name = "stdmulti");
 
   ~QmitkStdMultiWidget() override;
-
+  void ResetView();
   virtual void InitializeMultiWidget() override;
 
   virtual QmitkRenderWindow* GetRenderWindow(const QString& widgetName) const override;

@@ -38,6 +38,7 @@ found in the LICENSE file.
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkStripper.h>
 #include <vtkTriangleFilter.h>
+#include <vtkContourTriangulator.h>
 // constructor LocalStorage
 mitk::SurfaceVtkMapper2D::LocalStorage::LocalStorage()
 {
@@ -47,8 +48,6 @@ mitk::SurfaceVtkMapper2D::LocalStorage::LocalStorage()
   m_PropAssembly = vtkSmartPointer<vtkAssembly>::New();
   m_PropAssembly->AddPart(m_Actor);
   m_CuttingPlane = vtkSmartPointer<vtkPlane>::New();
-  /*m_Cutter = vtkSmartPointer<vtkClipPolyData>::New();
-  m_Cutter->SetClipFunction(m_CuttingPlane);*/
   m_Cutter = vtkSmartPointer<vtkCutter>::New();
   m_Cutter->SetCutFunction(m_CuttingPlane);
   m_Mapper->SetInputConnection(m_Cutter->GetOutputPort());
@@ -243,16 +242,14 @@ void mitk::SurfaceVtkMapper2D::GenerateDataForRenderer(mitk::BaseRenderer *rende
   {
     localStorage->m_Cutter->SetInputConnection(filter->GetOutputPort());
     localStorage->m_Cutter->Update();
-    vtkSmartPointer<vtkStripper> s = vtkSmartPointer<vtkStripper>::New();
-    s->SetInputData(localStorage->m_Cutter->GetOutput());
-    s->Update();
-    vtkSmartPointer<vtkPolyData> p = vtkSmartPointer<vtkPolyData>::New();
-    p->DeepCopy(s->GetOutput());
-    p->SetPolys(s->GetOutput()->GetLines());
-    vtkSmartPointer<vtkTriangleFilter> t = vtkSmartPointer<vtkTriangleFilter>::New();
-    t->SetInputData(p);
-    t->Update();
-    localStorage->m_Mapper->SetInputData(t->GetOutput());
+    vtkSmartPointer<vtkContourTriangulator> poly = vtkSmartPointer<vtkContourTriangulator>::New();
+    poly->TriangulationErrorDisplayOn();
+    poly->SetInputConnection(localStorage->m_Cutter->GetOutputPort());
+    poly->Update();
+    if (poly->GetOutput()->GetNumberOfPoints()>0)
+      localStorage->m_Mapper->SetInputData(poly->GetOutput());
+    else
+      localStorage->m_Mapper->SetInputData(localStorage->m_Cutter->GetOutput());
   }
   else
   {

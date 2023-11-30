@@ -334,3 +334,8 @@ void QmitkPointListView::RemoveSliceNavigationController(mitk::SliceNavigationCo
     return;
   m_Sncs.erase(snc);
 }
+
+std::set<mitk::SliceNavigationController*> QmitkPointListView::GetSliceNavigationControllers()
+{
+  return m_Sncs;
+}

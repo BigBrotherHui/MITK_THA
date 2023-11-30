@@ -246,6 +246,8 @@ bool mitk::DisplayActionEventBroadcast::CheckRotationPossible(const InteractionE
   auto allRenderWindows = RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
   for (auto renderWindow : allRenderWindows)
   {
+    if (mitk::BaseRenderer::GetInstance(renderWindow)->GetDataStorage()!=positionEvent->GetSender()->GetDataStorage())
+        continue;
     SliceNavigationController* snc = BaseRenderer::GetInstance(renderWindow)->GetSliceNavigationController();
 
     // If the mouse cursor is in 3D Renderwindow, do not check for intersecting planes.
@@ -369,6 +371,8 @@ bool mitk::DisplayActionEventBroadcast::CheckSwivelPossible(const InteractionEve
   auto allRenderWindows = RenderingManager::GetInstance()->GetAllRegisteredRenderWindows();
   for (auto renderWindow : allRenderWindows)
   {
+    if (mitk::BaseRenderer::GetInstance(renderWindow)->GetDataStorage() != positionEvent->GetSender()->GetDataStorage())
+      continue;
     SliceNavigationController* snc = BaseRenderer::GetInstance(renderWindow)->GetSliceNavigationController();
 
     // If the mouse cursor is in 3D Renderwindow, do not check for intersecting planes.

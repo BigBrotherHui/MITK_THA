@@ -38,6 +38,7 @@ found in the LICENSE file.
 
 #include <mitkPropertyObserver.h>
 #include <vtk_glew.h>
+#include <vtkLine.h>
 
 const mitk::PointSet *mitk::PointSetVtkMapper3D::GetInput()
 {
@@ -545,32 +546,60 @@ void mitk::PointSetVtkMapper3D::ApplyAllProperties(mitk::BaseRenderer *renderer,
   m_UnselectedActor->GetProperty()->SetOpacity(opacity);
 }
 
+vtkSmartPointer<vtkPolyData> createDottedLine(Eigen::Vector3d startPos,Eigen::Vector3d endPos,int seg)
+{
+  vtkSmartPointer<vtkPolyData> out = vtkSmartPointer<vtkPolyData>::New();
+  Eigen::Vector3d direction, epos;
+  direction = (endPos - startPos).normalized();
+  double norm = (endPos - startPos).norm();
+  double step = norm / seg;
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
+  for (int i = 0; i < seg; ++i)
+  {
+    epos = startPos + i * direction * step;
+    points->InsertNextPoint(epos[0], epos[1], epos[2]);
+    if (i % 2)
+    {
+      vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
+      line->GetPointIds()->SetId(0, i - 1);
+      line->GetPointIds()->SetId(1, i);
+      cells->InsertNextCell(line);
+    }
+  }
+  out->SetPoints(points);
+  out->SetLines(cells);
+  return out;
+}
+
+
 void mitk::PointSetVtkMapper3D::CreateContour(vtkPoints *points, vtkCellArray *m_PointConnections)
 {
   vtkSmartPointer<vtkAppendPolyData> vtkContourPolyData = vtkSmartPointer<vtkAppendPolyData>::New();
   vtkSmartPointer<vtkPolyDataMapper> vtkContourPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 
-  vtkSmartPointer<vtkPolyData> contour = vtkSmartPointer<vtkPolyData>::New();
-  contour->SetPoints(points);
-  contour->SetLines(m_PointConnections);
+  Eigen::Vector3d start(points->GetPoint(0)), end(points->GetPoint(1));
+  //vtkSmartPointer<vtkPolyData> contour = vtkSmartPointer<vtkPolyData>::New();
+  //contour->SetPoints(points);
+  //contour->SetLines(m_PointConnections);
 
-  vtkSmartPointer<vtkTubeFilter> tubeFilter = vtkSmartPointer<vtkTubeFilter>::New();
-  tubeFilter->SetNumberOfSides(12);
-  tubeFilter->SetInputData(contour);
+  //vtkSmartPointer<vtkTubeFilter> tubeFilter = vtkSmartPointer<vtkTubeFilter>::New();
+  //tubeFilter->SetNumberOfSides(12);
+  //tubeFilter->SetInputData(contour);
 
-  // check for property contoursize.
-  m_ContourRadius = 0.5;
-  mitk::FloatProperty::Pointer contourSizeProp =
-    dynamic_cast<mitk::FloatProperty *>(this->GetDataNode()->GetProperty("contoursize"));
+  //// check for property contoursize.
+  //m_ContourRadius = 0.5;
+  //mitk::FloatProperty::Pointer contourSizeProp =
+  //  dynamic_cast<mitk::FloatProperty *>(this->GetDataNode()->GetProperty("contoursize"));
 
-  if (contourSizeProp.IsNotNull())
-    m_ContourRadius = contourSizeProp->GetValue();
+  //if (contourSizeProp.IsNotNull())
+  //  m_ContourRadius = contourSizeProp->GetValue();
 
-  tubeFilter->SetRadius(m_ContourRadius);
-  tubeFilter->Update();
+  //tubeFilter->SetRadius(m_ContourRadius);
+  //tubeFilter->Update();
 
   // add to pipeline
-  vtkContourPolyData->AddInputConnection(tubeFilter->GetOutputPort());
+  vtkContourPolyData->AddInputData(createDottedLine(start, end, 50));
   vtkContourPolyDataMapper->SetInputConnection(vtkContourPolyData->GetOutputPort());
 
   m_ContourActor->SetMapper(vtkContourPolyDataMapper);

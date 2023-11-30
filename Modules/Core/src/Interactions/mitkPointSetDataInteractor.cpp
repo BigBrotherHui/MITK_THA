@@ -45,9 +45,9 @@ void mitk::PointSetDataInteractor::AddPoint(StateMachineAction *stateMachineActi
   ScalarType timeInMs = interactionEvent->GetSender()->GetTime();
 
   // disallow adding of new points if maximum number of points is reached
-  if (m_MaxNumberOfPoints > 1 && m_PointSet->GetSize(timeStep) >= m_MaxNumberOfPoints)
-  {
-    return;
+  if (m_PointSet->GetSize(timeStep) >= m_MaxNumberOfPoints) {
+      // m_PointSet->SetSelectInfo(m_PointSet->GetSize(timeStep) - 1, false);
+      // m_PointSet->RemovePointIfExists(m_PointSet->GetSize(timeStep) - 1);
   }
   // To add a point the minimal information is the position, this method accepts all InteractionsPositionEvents
   auto *positionEvent = dynamic_cast<InteractionPositionEvent *>(interactionEvent);

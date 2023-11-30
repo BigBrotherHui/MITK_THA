@@ -24,7 +24,7 @@
 #define USGETMODULECONTEXT_H
 
 #ifndef US_MODULE_NAME
-#error Missing preprocessor define US_MODULE_NAME
+//#error Missing preprocessor define US_MODULE_NAME
 #endif
 
 #include <usGlobalConfig.h>

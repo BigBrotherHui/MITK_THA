@@ -158,6 +158,9 @@ namespace mitk
 
       // glyph source (provides different shapes for the points)
       vtkSmartPointer<vtkGlyphSource2D> m_UnselectedGlyphSource2D;
+      vtkSmartPointer<vtkGlyphSource2D> m_SelectedGlyphSource2DOutter;
+      vtkSmartPointer<vtkGlyphSource2D> m_SelectedGlyphSource2DInner;
+      vtkSmartPointer<vtkGlyphSource2D> m_SelectedGlyphSource2DCross;
       vtkSmartPointer<vtkGlyphSource2D> m_SelectedGlyphSource2D;
 
       // glyph

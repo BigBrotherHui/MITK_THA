@@ -77,6 +77,22 @@ void QmitkPointListWidget::SetupConnections()
   connect(this->m_PointListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnListDoubleClick()));
   connect(this->m_PointListView, SIGNAL(SignalPointSelectionChanged()), this, SLOT(OnPointSelectionChanged()));
   connect(this->m_PointListView, SIGNAL(SignalTimeStepChanged(int)), this, SLOT(OnTimeStepChanged(int)));
+  connect(this->m_PointListView, &QListView::clicked, this, [&]
+  {
+      mitk::Point3D pt;
+      for (int i = 0; i < GetPointSet()->GetSize(); ++i)
+      {
+        if (GetPointSet()->GetSelectInfo(i))
+        {
+          pt = GetPointSet()->GetPoint(i);
+          break;
+        }
+      }
+      for (auto iter : m_PointListView->GetSliceNavigationControllers())
+      {
+        iter->SelectSliceByPoint(pt);
+      }
+  });
 }
 
 void QmitkPointListWidget::OnTimeStepChanged(int timeStep)

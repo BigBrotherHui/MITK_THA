@@ -212,8 +212,6 @@ void mitk::CameraController::MoveBy(const mitk::Vector2D &moveVectorInMM)
 
 void mitk::CameraController::Zoom(ScalarType factor, const Point2D &zoomPointInMM)
 {
-  if (factor <= 0.0)
-    return;
   if (this->GetRenderer()->GetMapperID() == BaseRenderer::Standard2D)
   {
     double parallelScale = this->GetRenderer()->GetVtkRenderer()->GetActiveCamera()->GetParallelScale() / factor;

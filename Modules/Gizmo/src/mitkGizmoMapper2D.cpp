@@ -222,13 +222,13 @@ void mitk::GizmoMapper2D::GenerateDataForRenderer(mitk::BaseRenderer *renderer)
   // loop over directions -1 and +1 for arrows
   for (double direction = -1.0; direction < 2.0; direction += 2.0)
   {
-    auto axisX =
-      Create2DArrow(cameraDirection,
-                    gizmoCenterView,
-                    plane->ProjectPointOntoPlane(gizmo->GetCenter() + (gizmo->GetAxisX() * arrowLength) * direction),
-                    Gizmo::MoveAlongAxisX,
-                    Gizmo::ScaleX);
-    appender->AddInputData(axisX);
+    // auto axisX =
+    //   Create2DArrow(cameraDirection,
+    //                 gizmoCenterView,
+    //                 plane->ProjectPointOntoPlane(gizmo->GetCenter() + (gizmo->GetAxisX() * arrowLength) * direction),
+    //                 Gizmo::MoveAlongAxisX,
+    //                 Gizmo::ScaleX);
+    // appender->AddInputData(axisX);
 
     auto axisY =
       Create2DArrow(cameraDirection,
@@ -238,13 +238,13 @@ void mitk::GizmoMapper2D::GenerateDataForRenderer(mitk::BaseRenderer *renderer)
                     Gizmo::ScaleY);
     appender->AddInputData(axisY);
 
-    auto axisZ =
-      Create2DArrow(cameraDirection,
-                    gizmoCenterView,
-                    plane->ProjectPointOntoPlane(gizmo->GetCenter() + (gizmo->GetAxisZ() * arrowLength) * direction),
-                    Gizmo::MoveAlongAxisZ,
-                    Gizmo::ScaleZ);
-    appender->AddInputData(axisZ);
+    // auto axisZ =
+    //   Create2DArrow(cameraDirection,
+    //                 gizmoCenterView,
+    //                 plane->ProjectPointOntoPlane(gizmo->GetCenter() + (gizmo->GetAxisZ() * arrowLength) * direction),
+    //                 Gizmo::MoveAlongAxisZ,
+    //                 Gizmo::ScaleZ);
+    // appender->AddInputData(axisZ);
   }
 
   ls->m_VtkPolyDataMapper->SetInputConnection(appender->GetOutputPort());

@@ -799,6 +799,7 @@ void mitk::ImageVtkMapper2D::SetDefaultProperties(mitk::DataNode *node, mitk::Ba
     }
   }
   // some more properties specific for a binary...
+  isBinaryImage = false;
   if (isBinaryImage)
   {
     node->AddProperty("opacity", mitk::FloatProperty::New(0.3f), renderer, overwrite);

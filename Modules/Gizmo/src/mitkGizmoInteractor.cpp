@@ -134,7 +134,8 @@ void mitk::GizmoInteractor::DecideInteraction(StateMachineAction *, InteractionE
   positionEvent->GetSender()->WorldToDisplay(m_InitialGizmoCenter3D, m_InitialGizmoCenter2D);
 
   m_InitialManipulatedObjectGeometry = m_ManipulatedObjectGeometry->Clone();
-
+  if (m_PickedHandle == Gizmo::ScaleY)
+    m_PickedHandle = Gizmo::RotateAroundAxisX;
   switch ( m_PickedHandle ) {
   case Gizmo::MoveAlongAxisX:
   case Gizmo::RotateAroundAxisX:

@@ -418,21 +418,21 @@ itk::LightObject::Pointer mitk::LookupTable::InternalClone() const
 
 void mitk::LookupTable::BuildGrayScaleLookupTable()
 {
-  vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
-  lut->SetRampToLinear();
-  lut->SetSaturationRange(0.0, 0.0);
-  lut->SetHueRange(0.0, 0.0);
-  lut->SetValueRange(0.0, 1.0);
-  lut->Build();
-  // vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
-  // lut->SetNumberOfTableValues(256);
-  // lut->Build();
-  // int i = 1;
-  // lut->SetTableValue(0,0,0,0,0);
-  // for (; i < 256; i++)
-  // {
-  //   lut->SetTableValue(i, i / 255.0, i / 255.0, i / 255.0, 1.0);
-  // }
+  //vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
+  //lut->SetRampToLinear();
+  //lut->SetSaturationRange(0.0, 0.0);
+  //lut->SetHueRange(0.0, 0.0);
+  //lut->SetValueRange(0.0, 1.0);
+  //lut->Build();
+   vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
+   lut->SetNumberOfTableValues(256);
+   lut->Build();
+   int i = 1;
+   lut->SetTableValue(0,0,0,0,0);
+   for (; i < 256; i++)
+   {
+     lut->SetTableValue(i, i / 255.0, i / 255.0, i / 255.0, 1.0);
+   }
 
   m_LookupTable = lut;
   this->Modified();

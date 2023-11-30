@@ -78,7 +78,7 @@ public:
    * used to navigate to the selected point.
    */
   void RemoveSliceNavigationController(mitk::SliceNavigationController *snc);
-
+  std::set<mitk::SliceNavigationController *> GetSliceNavigationControllers();
 signals:
 
   void SignalPointSelectionChanged(); ///< this signal is emmitted, if the selection of a point in the pointset is changed

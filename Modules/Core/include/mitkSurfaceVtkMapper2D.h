@@ -27,7 +27,8 @@ class vtkLookupTable;
 class vtkGlyph3D;
 class vtkArrowSource;
 class vtkReverseSense;
-
+class vtkClipPolyData;
+class vtkClipClosedSurface;
 namespace mitk
 {
   class Surface;
@@ -211,7 +212,7 @@ namespace mitk
        * @param renderer The respective renderer of the mitkRenderWindow.
        */
     void Update(BaseRenderer *renderer) override;
-    bool m_filled{1};
+    bool m_filled{0};
   };
 } // namespace mitk
 #endif

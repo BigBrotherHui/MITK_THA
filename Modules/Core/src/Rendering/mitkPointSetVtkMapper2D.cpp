@@ -33,7 +33,7 @@ found in the LICENSE file.
 #include <vtkTextProperty.h>
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
-
+#include <vtkAppendPolyData.h>
 #include <cstdlib>
 
 namespace
@@ -80,6 +80,9 @@ mitk::PointSetVtkMapper2D::LocalStorage::LocalStorage()
   // glyph source (provides the different shapes)
   m_UnselectedGlyphSource2D = vtkSmartPointer<vtkGlyphSource2D>::New();
   m_SelectedGlyphSource2D = vtkSmartPointer<vtkGlyphSource2D>::New();
+  m_SelectedGlyphSource2DOutter = vtkSmartPointer<vtkGlyphSource2D>::New();
+  m_SelectedGlyphSource2DInner = vtkSmartPointer<vtkGlyphSource2D>::New();
+  m_SelectedGlyphSource2DCross = vtkSmartPointer<vtkGlyphSource2D>::New();
 
   // glyphs
   m_UnselectedGlyph3D = vtkSmartPointer<vtkGlyph3D>::New();
@@ -129,7 +132,7 @@ mitk::PointSetVtkMapper2D::PointSetVtkMapper2D()
     m_IDShapeProperty(mitk::PointSetShapeProperty::CROSS),
     m_FillShape(false),
     m_DistanceToPlane(4.0f),
-    m_FixedSizeOnScreen(false)
+    m_FixedSizeOnScreen(1)
 {
 }
 
@@ -328,7 +331,7 @@ void mitk::PointSetVtkMapper2D::CreateVTKRenderObjects(mitk::BaseRenderer *rende
     // compute distance to current plane
     float dist = geo2D->Distance(point);
     // measure distance in screen pixel units if requested
-    if (m_FixedSizeOnScreen)
+    if (m_FixedSizeOnScreen && resolution>1)
     {
       dist /= resolution;
     }
@@ -342,15 +345,13 @@ void mitk::PointSetVtkMapper2D::CreateVTKRenderObjects(mitk::BaseRenderer *rende
       {
         ls->m_SelectedPoints->InsertNextPoint(point[0], point[1], point[2]);
         // point is scaled according to its distance to the plane
-        ls->m_SelectedScales->InsertNextTuple3(
-            std::max(0.0f, m_Point2DSize - (2 * dist)), 0, 0);
+        ls->m_SelectedScales->InsertNextTuple3(m_Point2DSize, 0, 0);
       }
       else
       {
         ls->m_UnselectedPoints->InsertNextPoint(point[0], point[1], point[2]);
         // point is scaled according to its distance to the plane
-        ls->m_UnselectedScales->InsertNextTuple3(
-            std::max(0.0f, m_Point2DSize - (2 * dist)), 0, 0);
+        ls->m_UnselectedScales->InsertNextTuple3(m_Point2DSize, 0, 0);
       }
 
       //---- LABEL -----//
@@ -571,13 +572,28 @@ void mitk::PointSetVtkMapper2D::CreateVTKRenderObjects(mitk::BaseRenderer *rende
 
   //---- SELECTED POINTS  -----//
 
-  ls->m_SelectedGlyphSource2D->SetGlyphTypeToCross();
-  // ls->m_SelectedGlyphSource2D->CrossOn();
-  ls->m_SelectedGlyphSource2D->FilledOff();
+  ls->m_SelectedGlyphSource2D->SetGlyphTypeToCircle();
+  ls->m_SelectedGlyphSource2D->FilledOn();
+  ls->m_SelectedGlyphSource2DOutter->SetGlyphTypeToCircle();
+  ls->m_SelectedGlyphSource2DOutter->FilledOff();
+  ls->m_SelectedGlyphSource2DOutter->SetScale(20);
+  ls->m_SelectedGlyphSource2DOutter->SetResolution(30);
+  ls->m_SelectedGlyphSource2DInner->SetGlyphTypeToCircle();
+  ls->m_SelectedGlyphSource2DInner->FilledOff();
+  ls->m_SelectedGlyphSource2DInner->SetScale(10);
+  ls->m_SelectedGlyphSource2DInner->SetResolution(20);
+  ls->m_SelectedGlyphSource2DCross->SetGlyphTypeToCross();
+  ls->m_SelectedGlyphSource2DCross->FilledOff();
+  ls->m_SelectedGlyphSource2DCross->SetScale(20);
 
+  vtkSmartPointer<vtkAppendPolyData> append = vtkSmartPointer<vtkAppendPolyData>::New();
+  append->AddInputConnection(ls->m_SelectedGlyphSource2DOutter->GetOutputPort());
+  append->AddInputConnection(ls->m_SelectedGlyphSource2DInner->GetOutputPort());
+  append->AddInputConnection(ls->m_SelectedGlyphSource2DCross->GetOutputPort());
+  append->AddInputConnection(ls->m_SelectedGlyphSource2D->GetOutputPort());
   // apply transform
   vtkSmartPointer<vtkTransformFilter> transformFilterS = vtkSmartPointer<vtkTransformFilter>::New();
-  transformFilterS->SetInputConnection(ls->m_SelectedGlyphSource2D->GetOutputPort());
+  transformFilterS->SetInputConnection(append->GetOutputPort());
   transformFilterS->SetTransform(transform);
 
   ls->m_VtkSelectedPointListPolyData->SetPoints(ls->m_SelectedPoints);
@@ -644,7 +660,7 @@ void mitk::PointSetVtkMapper2D::GenerateDataForRenderer(mitk::BaseRenderer *rend
   }
   node->GetBoolProperty("Pointset.2D.fill shape", m_FillShape, renderer);
   node->GetFloatProperty("Pointset.2D.distance to plane", m_DistanceToPlane, renderer);
-  node->GetBoolProperty("Pointset.2D.fixed size on screen", m_FixedSizeOnScreen, renderer);
+  // node->GetBoolProperty("Pointset.2D.fixed size on screen", m_FixedSizeOnScreen, renderer);
 
   mitk::PointSetShapeProperty::Pointer shape =
     dynamic_cast<mitk::PointSetShapeProperty *>(this->GetDataNode()->GetProperty("Pointset.2D.shape", renderer));
@@ -756,7 +772,7 @@ void mitk::PointSetVtkMapper2D::SetDefaultProperties(mitk::DataNode *node, mitk:
 {
   node->AddProperty("line width", mitk::IntProperty::New(2), renderer, overwrite);
   node->AddProperty("point line width", mitk::IntProperty::New(1), renderer, overwrite);
-  node->AddProperty("point 2D size", mitk::FloatProperty::New(6), renderer, overwrite);
+  node->AddProperty("point 2D size", mitk::FloatProperty::New(10), renderer, overwrite);
   node->AddProperty("show contour", mitk::BoolProperty::New(false), renderer, overwrite);
   node->AddProperty("close contour", mitk::BoolProperty::New(false), renderer, overwrite);
   node->AddProperty("show points", mitk::BoolProperty::New(true), renderer, overwrite);
@@ -766,16 +782,17 @@ void mitk::PointSetVtkMapper2D::SetDefaultProperties(mitk::DataNode *node, mitk:
   node->AddProperty("show distant lines", mitk::BoolProperty::New(false), renderer, overwrite);
   node->AddProperty("layer", mitk::IntProperty::New(1), renderer, overwrite);
   node->AddProperty("Pointset.2D.fill shape",
-                    mitk::BoolProperty::New(false),
+                    mitk::BoolProperty::New(1),
                     renderer,
                     overwrite); // fill or do not fill the glyph shape
   mitk::PointSetShapeProperty::Pointer pointsetShapeProperty = mitk::PointSetShapeProperty::New();
+  pointsetShapeProperty->SetValue(mitk::PointSetShapeProperty::CIRCLE);
   node->AddProperty("Pointset.2D.shape", pointsetShapeProperty, renderer, overwrite);
   node->AddProperty("Pointset.2D.distance to plane",
-                    mitk::FloatProperty::New(4.0f),
+                    mitk::FloatProperty::New(5.0f),
                     renderer,
                     overwrite); // show the point at a certain distance above/below the 2D imaging plane.
-  node->AddProperty("Pointset.2D.fixed size on screen", mitk::BoolProperty::New(false), renderer, overwrite);
+  node->AddProperty("Pointset.2D.fixed size on screen", mitk::BoolProperty::New(1), renderer, overwrite);
 
   Superclass::SetDefaultProperties(node, renderer, overwrite);
 }
