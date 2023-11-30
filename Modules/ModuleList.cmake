@@ -73,5 +73,5 @@ set(MITK_MODULES
   REST
   RESTService
   DICOMweb
-  Orthopedics
+  #Orthopedics
 )

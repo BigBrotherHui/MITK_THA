@@ -48,17 +48,32 @@ namespace mitk
       vtkProp *GetVtkProp(mitk::BaseRenderer *renderer) override;
     void UpdateVtkTransform(mitk::BaseRenderer *renderer) override;
 
-    bool SplinesAreAvailable();
+    bool SplinesAreAvailable(mitk::BaseRenderer *renderer);
 
-    vtkPolyData *GetSplinesPolyData();
+    vtkPolyData *GetSplinesPolyData(mitk::BaseRenderer *renderer);
 
-    vtkActor *GetSplinesActor();
+    vtkActor *GetSplinesActor(mitk::BaseRenderer *renderer);
 
-    virtual void UpdateSpline();
+    virtual void UpdateSpline(mitk::BaseRenderer *renderer);
 
     itkSetMacro(SplineResolution, unsigned int);
 
     itkGetMacro(SplineResolution, unsigned int);
+    class LocalStorage : public PointSetVtkMapper3D::LocalStorage
+    {
+    public:
+        /* constructor */
+        LocalStorage();
+
+        /* destructor */
+        ~LocalStorage();
+        vtkActor *m_SplinesActor;
+        vtkPropAssembly *m_SplineAssembly;
+        vtkPolyDataMapper *profileMapper;
+        bool m_SplinesAddedToAssembly;
+        bool m_SplinesAvailable;
+    };
+    mitk::LocalStorageHandler<LocalStorage> m_LSH;
 
   protected:
     SplineVtkMapper3D();
@@ -68,14 +83,6 @@ namespace mitk
     void GenerateDataForRenderer(mitk::BaseRenderer *renderer) override;
 
     void ApplyAllProperties(BaseRenderer *renderer, vtkActor *actor) override;
-
-    vtkActor *m_SplinesActor;
-
-    vtkPropAssembly *m_SplineAssembly;
-
-    bool m_SplinesAvailable;
-
-    bool m_SplinesAddedToAssembly;
 
     unsigned int m_SplineResolution;
 
