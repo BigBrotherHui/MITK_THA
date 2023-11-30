@@ -23,7 +23,7 @@ QmitkRenderWindowWidget::QmitkRenderWindowWidget(QWidget* parent/* = nullptr*/,
   , m_WidgetName(widgetName)
   , m_DataStorage(dataStorage)
   , m_RenderWindow(nullptr)
-  , m_CrosshairManager(nullptr)
+  // , m_CrosshairManager(nullptr)
 {
   this->InitializeGUI();
 }
@@ -153,28 +153,29 @@ bool QmitkRenderWindowWidget::IsRenderWindowMenuActivated() const
 
 void QmitkRenderWindowWidget::SetCrosshairVisibility(bool visible)
 {
-  m_CrosshairManager->SetCrosshairVisibility(visible, m_RenderWindow->GetRenderer());
-  this->RequestUpdate();
+  // m_CrosshairManager->SetCrosshairVisibility(visible, m_RenderWindow->GetRenderer());
+  // this->RequestUpdate();
 }
 
 bool QmitkRenderWindowWidget::GetCrosshairVisibility()
 {
-  return m_CrosshairManager->GetCrosshairVisibility(m_RenderWindow->GetRenderer());
+  return 1;
+  // return m_CrosshairManager->GetCrosshairVisibility(m_RenderWindow->GetRenderer());
 }
 
 void QmitkRenderWindowWidget::SetCrosshairGap(unsigned int gapSize)
 {
-  m_CrosshairManager->SetCrosshairGap(gapSize);
+  // m_CrosshairManager->SetCrosshairGap(gapSize);
 }
 
 void QmitkRenderWindowWidget::EnableCrosshair()
 {
-  m_CrosshairManager->AddCrosshairNodeToDataStorage(m_DataStorage);
+  // m_CrosshairManager->AddCrosshairNodeToDataStorage(m_DataStorage);
 }
 
 void QmitkRenderWindowWidget::DisableCrosshair()
 {
-  m_CrosshairManager->RemoveCrosshairNodeFromDataStorage(m_DataStorage);
+  // m_CrosshairManager->RemoveCrosshairNodeFromDataStorage(m_DataStorage);
 }
 
 void QmitkRenderWindowWidget::InitializeGUI()
@@ -207,10 +208,10 @@ void QmitkRenderWindowWidget::InitializeGUI()
   InitializeDecorations();
 
   // use crosshair manager
-  m_CrosshairManager = mitk::CrosshairManager::New(m_RenderWindow->GetRenderer());
-  sliceNavigationController->SetCrosshairEvent.AddListener(
-    mitk::MessageDelegate1<QmitkRenderWindowWidget, const mitk::Point3D &>(
-      this, &QmitkRenderWindowWidget::SetCrosshairPosition));
+  // m_CrosshairManager = mitk::CrosshairManager::New(m_RenderWindow->GetRenderer());
+  // sliceNavigationController->SetCrosshairEvent.AddListener(
+  //   mitk::MessageDelegate1<QmitkRenderWindowWidget, const mitk::Point3D &>(
+  //     this, &QmitkRenderWindowWidget::SetCrosshairPosition));
 
   // finally add observer, after all relevant objects have been created / initialized
   sliceNavigationController->ConnectGeometrySendEvent(this);
@@ -249,13 +250,14 @@ void QmitkRenderWindowWidget::InitializeDecorations()
 
 void QmitkRenderWindowWidget::SetCrosshairPosition(const mitk::Point3D& newPosition)
 {
-  m_CrosshairManager->SetCrosshairPosition(newPosition);
-  this->RequestUpdate();
+  // m_CrosshairManager->SetCrosshairPosition(newPosition);
+  // this->RequestUpdate();
 }
 
 mitk::Point3D QmitkRenderWindowWidget::GetCrosshairPosition() const
 {
-  return m_CrosshairManager->GetCrosshairPosition();
+  return mitk::Point3D();
+  // return m_CrosshairManager->GetCrosshairPosition();
 }
 
 void QmitkRenderWindowWidget::SetGeometry(const itk::EventObject& event)
@@ -282,7 +284,7 @@ void QmitkRenderWindowWidget::SetGeometrySlice(const itk::EventObject& event)
   }
 
   const auto* sliceNavigationController = this->GetSliceNavigationController();
-  m_CrosshairManager->UpdateCrosshairPosition(sliceNavigationController);
+  // m_CrosshairManager->UpdateCrosshairPosition(sliceNavigationController);
 }
 
 void QmitkRenderWindowWidget::OnResetGeometry()

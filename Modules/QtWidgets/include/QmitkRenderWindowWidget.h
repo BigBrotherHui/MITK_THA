@@ -112,7 +112,7 @@ private:
 
   QmitkRenderWindow* m_RenderWindow;
 
-  mitk::CrosshairManager::Pointer m_CrosshairManager;
+  // mitk::CrosshairManager::Pointer m_CrosshairManager;
 
   std::pair<mitk::Color, mitk::Color> m_GradientBackgroundColors;
   mitk::Color m_DecorationColor;

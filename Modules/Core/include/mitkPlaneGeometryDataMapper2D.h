@@ -84,7 +84,12 @@ namespace mitk
 
     /** \brief The LocalStorageHandler holds all (three) LocalStorages for the three 2D render windows. */
     mitk::LocalStorageHandler<LocalStorage> m_LSH;
-
+    void setReletivePlaneMappers(std::set<PlaneGeometryDataMapper2D::Pointer> mappers)
+    { 
+      s_AllInstances.clear();
+      for (auto iter : mappers)
+        s_AllInstances.insert(iter);
+    }
   protected:
     /* constructor */
     PlaneGeometryDataMapper2D();
@@ -110,7 +115,7 @@ namespace mitk
     NodesVectorType m_OtherPlaneGeometries;
 
     typedef std::set<Self *> AllInstancesContainer;
-    static AllInstancesContainer s_AllInstances;
+    AllInstancesContainer s_AllInstances;
 
     bool m_RenderOrientationArrows;
     bool m_ArrowOrientationPositive;

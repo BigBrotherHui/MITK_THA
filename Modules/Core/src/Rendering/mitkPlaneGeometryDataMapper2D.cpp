@@ -143,7 +143,7 @@ namespace
   };
 }
 
-mitk::PlaneGeometryDataMapper2D::AllInstancesContainer mitk::PlaneGeometryDataMapper2D::s_AllInstances;
+// mitk::PlaneGeometryDataMapper2D::AllInstancesContainer mitk::PlaneGeometryDataMapper2D::s_AllInstances;
 
 // input for this mapper ( = PlaneGeometryData)
 const mitk::PlaneGeometryData *mitk::PlaneGeometryDataMapper2D::GetInput() const

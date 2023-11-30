@@ -32,6 +32,7 @@ found in the LICENSE file.
 #include <mitkStatusBar.h>
 #include <mitkDisplayActionEventHandlerStd.h>
 #include <mitkVtkLayerController.h>
+#include <mitkDisplayActionEventFunctions.h>
 
 // qt
 #include <QList>
@@ -62,6 +63,51 @@ QmitkStdMultiWidget::~QmitkStdMultiWidget()
   }
 }
 
+void QmitkStdMultiWidget::ResetView()
+{
+  auto dataStorage = GetDataStorage();
+  if (nullptr == dataStorage)
+  {
+    return;
+  }
+  for (int i = 0; i < GetNumberOfRenderWindowWidgets(); ++i)
+  {
+    mitk::RenderingManager::GetInstance()->InitializeViewByBoundingObjects(GetRenderWindow(i)->renderWindow(),
+                                                                           dataStorage);
+  }
+}
+
+mitk::StdFunctionCommand::ActionFunction QmitkStdMultiWidget::SetCrosshairSynchronizedAction() {
+  auto actionFunction = [&](const itk::EventObject &displayInteractorEvent)
+  {
+    if (mitk::DisplaySetCrosshairEvent().CheckEvent(&displayInteractorEvent))
+    {
+      const mitk::DisplaySetCrosshairEvent *displayActionEvent =
+        dynamic_cast<const mitk::DisplaySetCrosshairEvent *>(&displayInteractorEvent);
+      const mitk::BaseRenderer::Pointer sendingRenderer = displayActionEvent->GetSender();
+      if (nullptr == sendingRenderer || sendingRenderer->GetMapperID() == mitk::BaseRenderer::Standard3D)
+      {
+        return;
+      }
+
+      for (int i=0;i<GetNumberOfRenderWindowWidgets();++i)
+      {
+        auto renderWindow = GetRenderWindow(i)->GetVtkRenderWindow();
+        if (mitk::BaseRenderer::GetInstance(renderWindow)->GetMapperID() != mitk::BaseRenderer::Standard2D)
+            continue;
+        if (GetRenderWindow(i)->GetRenderer()->GetDataStorage() != displayActionEvent->GetSender()->GetDataStorage())
+            continue;
+        mitk::BaseRenderer::GetInstance(renderWindow)
+        ->GetSliceNavigationController()
+        ->SelectSliceByPoint(displayActionEvent->GetPosition());
+    
+      }
+    }
+  };
+
+  return actionFunction;
+}
+
 void QmitkStdMultiWidget::InitializeMultiWidget()
 {
   // yellow is default color for widget4
@@ -90,7 +136,6 @@ void QmitkStdMultiWidget::InitializeMultiWidget()
   // the parent node
   m_ParentNodeForGeometryPlanes =
     mitk::BaseRenderer::GetInstance(GetRenderWindow4()->renderWindow())->GetCurrentWorldPlaneGeometryNode();
-
   AddDisplayPlaneSubTree();
 
   SetDisplayActionEventHandler(std::make_unique<mitk::DisplayActionEventHandlerStd>());
@@ -98,7 +143,30 @@ void QmitkStdMultiWidget::InitializeMultiWidget()
   auto displayActionEventHandler = GetDisplayActionEventHandler();
   if (nullptr != displayActionEventHandler)
   {
-    displayActionEventHandler->InitActions();
+    // displayActionEventHandler->InitActions();
+    // synchronized action event function
+    mitk::StdFunctionCommand::ActionFunction actionFunction = QmitkStdMultiWidget::SetCrosshairSynchronizedAction();
+    GetDisplayActionEventHandler()->ConnectDisplayActionEvent(mitk::DisplaySetCrosshairEvent(nullptr, mitk::Point3D()),
+                                                              actionFunction);
+
+    // desynchronized action event function
+    actionFunction = mitk::DisplayActionEventFunctions::MoveSenderCameraAction();
+    GetDisplayActionEventHandler()->ConnectDisplayActionEvent(mitk::DisplayMoveEvent(nullptr, mitk::Vector2D()),
+                                                              actionFunction);
+
+    // desynchronized action event function
+    actionFunction = mitk::DisplayActionEventFunctions::ZoomSenderCameraAction();
+    GetDisplayActionEventHandler()->ConnectDisplayActionEvent(mitk::DisplayZoomEvent(nullptr, 0.0, mitk::Point2D()),
+                                                              actionFunction);
+
+    // desynchronized action event function
+    actionFunction = mitk::DisplayActionEventFunctions::ScrollSliceStepperAction();
+    GetDisplayActionEventHandler()->ConnectDisplayActionEvent(mitk::DisplayScrollEvent(nullptr, 0, true),
+                                                              actionFunction);
+
+    actionFunction = mitk::DisplayActionEventFunctions::SetLevelWindowAction();
+    GetDisplayActionEventHandler()->ConnectDisplayActionEvent(
+      mitk::DisplaySetLevelWindowEvent(nullptr, mitk::ScalarType(), mitk::ScalarType()), actionFunction);
   }
 }
 
@@ -257,14 +325,7 @@ void QmitkStdMultiWidget::SetCrosshairGap(unsigned int gapSize)
 
 void QmitkStdMultiWidget::ResetCrosshair()
 {
-  auto dataStorage = GetDataStorage();
-  if (nullptr == dataStorage)
-  {
-    return;
-  }
-
-  mitk::RenderingManager::GetInstance()->InitializeViewsByBoundingObjects(dataStorage);
-
+  ResetView();
   SetWidgetPlaneMode(mitk::InteractionSchemeSwitcher::MITKStandard);
 }
 
@@ -555,8 +616,8 @@ void QmitkStdMultiWidget::AddDisplayPlaneSubTree()
   // add the displayed planes of the multiwidget to a node to which the subtree
   // @a planesSubTree points ...
 
-  mitk::PlaneGeometryDataMapper2D::Pointer mapper;
-
+  mitk::PlaneGeometryDataMapper2D::Pointer mapper1,mapper2,mapper3;
+  std::set<mitk::PlaneGeometryDataMapper2D::Pointer> mappers;
   // ... of widget 1
   mitk::BaseRenderer* renderer1 = mitk::BaseRenderer::GetInstance(GetRenderWindow1()->renderWindow());
   m_PlaneNode1 = renderer1->GetCurrentWorldPlaneGeometryNode();
@@ -564,8 +625,9 @@ void QmitkStdMultiWidget::AddDisplayPlaneSubTree()
   m_PlaneNode1->SetProperty("name", mitk::StringProperty::New(std::string(renderer1->GetName()) + ".plane"));
   m_PlaneNode1->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
   m_PlaneNode1->SetProperty("helper object", mitk::BoolProperty::New(true));
-  mapper = mitk::PlaneGeometryDataMapper2D::New();
-  m_PlaneNode1->SetMapper(mitk::BaseRenderer::Standard2D, mapper);
+  mapper1 = mitk::PlaneGeometryDataMapper2D::New();
+  m_PlaneNode1->SetMapper(mitk::BaseRenderer::Standard2D, mapper1);
+  mappers.emplace(mapper1);
 
   // ... of widget 2
   mitk::BaseRenderer* renderer2 = mitk::BaseRenderer::GetInstance(GetRenderWindow2()->renderWindow());
@@ -574,9 +636,9 @@ void QmitkStdMultiWidget::AddDisplayPlaneSubTree()
   m_PlaneNode2->SetProperty("name", mitk::StringProperty::New(std::string(renderer2->GetName()) + ".plane"));
   m_PlaneNode2->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
   m_PlaneNode2->SetProperty("helper object", mitk::BoolProperty::New(true));
-  mapper = mitk::PlaneGeometryDataMapper2D::New();
-  m_PlaneNode2->SetMapper(mitk::BaseRenderer::Standard2D, mapper);
-
+  mapper2 = mitk::PlaneGeometryDataMapper2D::New();
+  m_PlaneNode2->SetMapper(mitk::BaseRenderer::Standard2D, mapper2);
+  mappers.emplace(mapper2);
   // ... of widget 3
   mitk::BaseRenderer *renderer3 = mitk::BaseRenderer::GetInstance(GetRenderWindow3()->renderWindow());
   m_PlaneNode3 = renderer3->GetCurrentWorldPlaneGeometryNode();
@@ -584,12 +646,16 @@ void QmitkStdMultiWidget::AddDisplayPlaneSubTree()
   m_PlaneNode3->SetProperty("name", mitk::StringProperty::New(std::string(renderer3->GetName()) + ".plane"));
   m_PlaneNode3->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
   m_PlaneNode3->SetProperty("helper object", mitk::BoolProperty::New(true));
-  mapper = mitk::PlaneGeometryDataMapper2D::New();
-  m_PlaneNode3->SetMapper(mitk::BaseRenderer::Standard2D, mapper);
-
+  mapper3 = mitk::PlaneGeometryDataMapper2D::New();
+  m_PlaneNode3->SetMapper(mitk::BaseRenderer::Standard2D, mapper3);
+  mappers.emplace(mapper3);
   m_ParentNodeForGeometryPlanes = mitk::DataNode::New();
   m_ParentNodeForGeometryPlanes->SetProperty("name", mitk::StringProperty::New("Widgets"));
   m_ParentNodeForGeometryPlanes->SetProperty("helper object", mitk::BoolProperty::New(true));
+
+  mapper1->setReletivePlaneMappers(mappers);
+  mapper2->setReletivePlaneMappers(mappers);
+  mapper3->setReletivePlaneMappers(mappers);
 }
 
 void QmitkStdMultiWidget::EnsureDisplayContainsPoint(mitk::BaseRenderer *renderer, const mitk::Point3D &p)
