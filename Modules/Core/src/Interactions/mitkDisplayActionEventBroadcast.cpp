@@ -173,10 +173,10 @@ bool mitk::DisplayActionEventBroadcast::FilterEvents(InteractionEvent* interacti
     return false;
   }
 
-  //if (BaseRenderer::Standard3D == sendingRenderer->GetMapperID())
-  //{
-  //  return false;
-  //}
+  if (BaseRenderer::Standard3D == sendingRenderer->GetMapperID())
+  {
+    return false;
+  }
 
   return true;
 }
@@ -697,6 +697,7 @@ void mitk::DisplayActionEventBroadcast::Rotate(StateMachineAction* /*stateMachin
     if (nullptr == timeGeometry)
     {
       continue;
+
     }
 
     timeGeometry->ExecuteOperation(&rotationOperation);
