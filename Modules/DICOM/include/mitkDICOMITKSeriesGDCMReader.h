@@ -318,8 +318,11 @@ class MITKDICOM_EXPORT DICOMITKSeriesGDCMReader : public DICOMFileReader
     virtual SortingBlockList Condense3DBlocks(SortingBlockList& resultOf3DGrouping);
 
     virtual DICOMTagCache::Pointer GetTagCache() const;
+
+  public:
     void SetTagCache( const DICOMTagCache::Pointer& ) override;
 
+  protected:
     /// \brief Sorting step as described in \ref DICOMITKSeriesGDCMReader_LoadingStrategy
   static SortingBlockList InternalExecuteSortingStep(
         unsigned int sortingStepIndex,

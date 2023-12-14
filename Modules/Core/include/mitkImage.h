@@ -409,6 +409,7 @@ namespace mitk
           spacing[j] = 1.0;
         }
       }
+      //judge in app the slice is inverse or not
       if (itkdirectionOk == false)
       {
         MITK_ERROR << "Illegal matrix returned by itk::Image::GetDirection():" << itkdirection
