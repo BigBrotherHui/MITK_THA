@@ -23,6 +23,8 @@ found in the LICENSE file.
 #include "mitkProperties.h"
 #include "mitkRenderingModeProperty.h"
 #include <itkCommand.h>
+#include "mitkTransferFunction.h"
+#include "mitkTransferFunctionProperty.h"
 
 mitk::LevelWindowManager::LevelWindowManager()
   : m_DataStorage(nullptr)
@@ -33,6 +35,8 @@ mitk::LevelWindowManager::LevelWindowManager()
   , m_IsPropertyModifiedTagSet(false)
   , m_LevelWindowMutex(false)
 {
+  LevelWindowChanged.AddListener(mitk::MessageDelegate1<mitk::LevelWindowManager, const mitk::LevelWindow &>(
+    this, &mitk::LevelWindowManager::levelWindowChanged));
 }
 
 mitk::LevelWindowManager::~LevelWindowManager()
@@ -82,6 +86,77 @@ void mitk::LevelWindowManager::SetDataStorage(DataStorage *dataStorage)
 mitk::DataStorage *mitk::LevelWindowManager::GetDataStorage()
 {
   return m_DataStorage.GetPointer();
+}
+
+void mitk::LevelWindowManager::setLevelWindowChangedWithVolumeRendering(bool v)
+{
+  m_levelWindowChangedWithVolumeRendering = v;
+}
+
+void mitk::LevelWindowManager::setLevelWindowChangedNodeNames(const std::vector<std::string>& names)
+{
+  m_levelWindowChangedNodeNames = names;
+}
+
+void mitk::LevelWindowManager::levelWindowChanged(const mitk::LevelWindow& levelWindow)
+{
+  if (!m_levelWindowChangedWithVolumeRendering)
+    return;
+  if (m_DataStorage.IsNull())
+    return;
+  auto subset = m_DataStorage->GetSubset(mitk::NodePredicateDataType::New("Image"));
+  for (auto pNode : *subset)
+  {
+    if (!m_levelWindowChangedNodeNames.empty() &&
+        std::find(m_levelWindowChangedNodeNames.begin(), m_levelWindowChangedNodeNames.end(), pNode->GetName()) ==
+          m_levelWindowChangedNodeNames.end())
+      continue;
+    bool v;
+    pNode->GetBoolProperty("volumerendering", v);
+    if (!v)
+    {
+      continue;
+    }
+    double opacity = 1;
+    auto levelWindow = m_LevelWindowProperty->GetLevelWindow();
+    auto level = levelWindow.GetLevel();
+    auto window = levelWindow.GetWindow();
+    auto min = level - window / 2;
+    auto perWindow = window / 8;
+    pNode->SetProperty("volumerendering.usegpu", mitk::BoolProperty::New(false));
+    pNode->SetProperty("volumerendering.usemip", mitk::BoolProperty::New(false));
+    pNode->SetProperty("volumerendering.blendmode", mitk::IntProperty::New(0)); //使用混合形式的投影
+    auto transferFunction = mitk::TransferFunction::New();
+    double scalarOpacities[8] = {0, 0.001846, 0.024414, 0.100113, 0.467300, 0.711914, 0.915909, 1};
+    transferFunction->GetScalarOpacityFunction()->RemoveAllPoints();
+    for (int i = 0; i < 8; i++)
+    {
+      auto x = min + i * perWindow;
+      if (i >= 4)
+      {
+        x += perWindow;
+      }
+      auto y = scalarOpacities[i] * opacity;
+      transferFunction->GetScalarOpacityFunction()->AddPoint(x, y);
+    }
+    transferFunction->GetScalarOpacityFunction()->Modified();
+
+    transferFunction->GetGradientOpacityFunction()->RemoveAllPoints();
+    transferFunction->GetGradientOpacityFunction()->AddPoint(0, 1.000000 * opacity);
+    transferFunction->GetGradientOpacityFunction()->Modified();
+
+    transferFunction->GetColorTransferFunction()->RemoveAllPoints();
+    transferFunction->GetColorTransferFunction()->AddRGBPoint(312.382940, 1.000000, 0.564706, 0.274510);
+    transferFunction->GetColorTransferFunction()->AddRGBPoint(455.103448, 1.000000, 0.945098, 0.768627);
+    transferFunction->GetColorTransferFunction()->AddRGBPoint(623.773140, 1.000000, 0.800000, 0.333333);
+    transferFunction->GetColorTransferFunction()->AddRGBPoint(796.767695, 1.000000, 0.901961, 0.815686);
+    transferFunction->GetColorTransferFunction()->AddRGBPoint(930.838475, 1.000000, 1.000000, 1.000000);
+    transferFunction->GetColorTransferFunction()->AddRGBPoint(1073.558984, 1.000000, 0.839216, 0.423529);
+    transferFunction->GetColorTransferFunction()->AddRGBPoint(1220.604356, 1.000000, 0.772549, 0.490196);
+    transferFunction->GetColorTransferFunction()->Modified();
+    pNode->SetProperty("TransferFunction", mitk::TransferFunctionProperty::New(transferFunction.GetPointer()));
+  }
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 void mitk::LevelWindowManager::SetAutoTopMostImage(bool autoTopMost, const DataNode *removedNode/* = nullptr*/)
@@ -440,6 +515,7 @@ void mitk::LevelWindowManager::SetLevelWindow(const LevelWindow &levelWindow)
   }
 
   this->Modified();
+  LevelWindowChanged.Send(levelWindow);
 }
 
 mitk::LevelWindowProperty::Pointer mitk::LevelWindowManager::GetLevelWindowProperty() const

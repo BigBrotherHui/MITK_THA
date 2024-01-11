@@ -21,6 +21,7 @@ found in the LICENSE file.
 //  c++
 #include <map>
 #include <utility>
+#include <vector>
 
 namespace mitk
 {
@@ -59,6 +60,18 @@ namespace mitk
     void SetDataStorage(DataStorage* dataStorage);
     DataStorage *GetDataStorage();
 
+    typedef Message1<const mitk::LevelWindow &> LevelWindowEvent;
+    LevelWindowEvent LevelWindowChanged;
+    void setLevelWindowChangedWithVolumeRendering(bool v);
+
+    //if names is empty,then all the image will be influenced
+    void setLevelWindowChangedNodeNames(const std::vector<std::string> &names);
+
+  protected:
+    void levelWindowChanged(const mitk::LevelWindow &levelWindow);
+  private:
+    std::vector<std::string> m_levelWindowChangedNodeNames;
+  public:
     /**
     * @brief (Re-)Initialize the LevelWindowManager by setting the topmost image.
     *        Use the removedNode parameter if a node was removed.
@@ -199,6 +212,7 @@ namespace mitk
     std::vector<DataNode::Pointer> m_DataNodesForLevelWindow;
     bool m_IsPropertyModifiedTagSet;
     bool m_LevelWindowMutex;
+    bool m_levelWindowChangedWithVolumeRendering{false};
   };
 }
 

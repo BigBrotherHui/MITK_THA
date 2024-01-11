@@ -55,7 +55,13 @@ namespace mitk
   class MITKCORE_EXPORT BaseRenderer : public itk::Object
   {
   public:
-
+    enum ViewDirection
+    {
+        AXIAL,
+        CORONAL,
+        SAGITTAL,
+        THREE_D
+    };
     typedef std::map<vtkRenderWindow*, BaseRenderer*> BaseRendererMapType;
     static BaseRendererMapType baseRendererMap;
 
