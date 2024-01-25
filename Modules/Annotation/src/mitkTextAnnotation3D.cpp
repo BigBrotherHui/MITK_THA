@@ -24,6 +24,7 @@ mitk::TextAnnotation3D::TextAnnotation3D()
 {
   mitk::Point3D position;
   position.Fill(0);
+  m_followerPosition.Fill(0);
   this->SetPosition3D(position);
   this->SetOffsetVector(position);
   this->SetText("");
@@ -62,6 +63,10 @@ mitk::TextAnnotation3D::LocalStorage::LocalStorage()
   m_follower->SetScale(1);
 }
 
+mitk::Point3D mitk::TextAnnotation3D::GetFollowerPosition(){
+  return m_followerPosition;
+}
+
 void mitk::TextAnnotation3D::UpdateVtkAnnotation(mitk::BaseRenderer *renderer)
 {
   LocalStorage *ls = this->m_LSH.GetLocalStorage(renderer);
@@ -86,6 +91,7 @@ void mitk::TextAnnotation3D::UpdateVtkAnnotation(mitk::BaseRenderer *renderer)
         vtkMath::Cross(cameraDirection.GetDataPointer(), viewUp.GetDataPointer(), viewRight.GetDataPointer());
 
         pos3d = pos3d + viewRight * offset[0] + viewUp * offset[1] + cameraDirection * offset[2];
+        m_followerPosition = pos3d - viewRight*GetFontSize() * GetText().length() / 2;
       }
     }
     ls->m_follower->SetPosition(pos3d.GetDataPointer());

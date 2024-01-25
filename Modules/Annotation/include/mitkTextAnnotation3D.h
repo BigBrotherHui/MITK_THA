@@ -27,6 +27,7 @@ namespace mitk
   class MITKANNOTATION_EXPORT TextAnnotation3D : public mitk::VtkAnnotation3D
   {
   public:
+  mitk::Point3D GetFollowerPosition();
     /** \brief Internal class holding the mapper, actor, etc. for each of the render windows */
     /**
        * To render the Annotation on axial, coronal, and sagittal, the update method
@@ -72,7 +73,7 @@ namespace mitk
   private:
     /** \brief copy constructor */
     TextAnnotation3D(const TextAnnotation3D &);
-
+    mitk::Point3D m_followerPosition;
     /** \brief assignment operator */
     TextAnnotation3D &operator=(const TextAnnotation3D &);
   };

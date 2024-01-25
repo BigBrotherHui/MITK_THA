@@ -80,4 +80,7 @@ set(MITK_MODULES
   LancetRobot
   LancetIGT
   LancetIGTUI
+  CudaExample
+  # GemCore
+  # GemMesher
 )
