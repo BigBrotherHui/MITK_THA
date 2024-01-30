@@ -232,7 +232,7 @@ function(mitk_create_plugin)
 
   if(NOT _PLUGIN_WARNINGS_NO_ERRORS)
     if(MSVC_VERSION)
-      mitkFunctionCheckCAndCXXCompilerFlags("/WX" plugin_c_flags plugin_cxx_flags)
+      mitkFunctionCheckCAndCXXCompilerFlags("/WX-" plugin_c_flags plugin_cxx_flags)
     else()
       mitkFunctionCheckCAndCXXCompilerFlags(-Werror plugin_c_flags plugin_cxx_flags)
       mitkFunctionCheckCAndCXXCompilerFlags("-Wno-error=c++0x-static-nonintegral-init" plugin_c_flags plugin_cxx_flags)

@@ -87,4 +87,15 @@ set(MITK_PLUGINS
   org.mitk.gui.qt.pixelvalue:ON
   org.mitk.gui.qt.exampleplugin:ON
   org.mitk.lancet.dentalaccuracy:ON
+  org.mitk.ch.zhaw.gemapplication:ON
+  # org.mitk.ch.zhaw.graphcut:ON
+  # org.mitk.ch.zhaw.materialmapping:ON
+  org.mitk.ch.zhaw.padding:ON
+  # org.mitk.ch.zhaw.resample:ON
+  # org.mitk.ch.zhaw.ugvisualization:ON
+  # org.mitk.ch.zhaw.volumemesh:ON
+  # org.mitk.ch.zhaw.voxel2mesh:ON
+  # org.mitk.gui.qt.common.legacy:ON
+  #plugins show begin with org.mitk.
+  org.mitk.panorama:ON
 )

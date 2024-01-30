@@ -1,0 +1,5 @@
+#set(Boost_ADDITIONAL_VERSIONS "1.80.0" "1.80")
+
+find_package(CGAL REQUIRED)
+
+list(APPEND ALL_LIBRARIES "CGAL::CGAL")

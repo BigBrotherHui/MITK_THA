@@ -332,7 +332,7 @@ function(mitk_create_module)
 
     if(NOT MODULE_WARNINGS_NO_ERRORS)
       if(MSVC_VERSION)
-        mitkFunctionCheckCAndCXXCompilerFlags("/WX" module_c_flags module_cxx_flags)
+        mitkFunctionCheckCAndCXXCompilerFlags("/WX-" module_c_flags module_cxx_flags)
 	# this would turn on unused parameter warnings, but unfortunately MSVC cannot
 	# distinguish yet between internal and external headers so this would be triggered
 	# a lot by external code. There is support for it on the way so this line could be

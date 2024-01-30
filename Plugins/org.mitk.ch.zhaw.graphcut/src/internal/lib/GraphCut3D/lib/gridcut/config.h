@@ -1,0 +1,1 @@
+/* #undef GRIDCUT_LIBRARY_AVAILABLE */

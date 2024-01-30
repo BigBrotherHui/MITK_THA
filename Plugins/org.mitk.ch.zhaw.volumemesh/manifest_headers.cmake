@@ -1,0 +1,5 @@
+set(Plugin-Name "Volume mesher (tetgen)")
+set(Plugin-Version "1.0")
+set(Plugin-Vendor "ZHAW")
+set(Plugin-ContactAddress "https://simtk.org/home/mitk-gem")
+set(Require-Plugin org.mitk.gui.qt.common ch.zhaw.gemapplication)
