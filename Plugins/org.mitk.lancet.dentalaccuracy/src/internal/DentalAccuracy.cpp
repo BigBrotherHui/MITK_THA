@@ -2871,8 +2871,9 @@ void DentalAccuracy::on_pushButton_splineAndPanorama_clicked()
 
 	for (int i{ 0 }; i < 2 * thickness; i++)
 	{
+		//caculate how much length every step covers
 		double stepSize = segLength * (-thickness + i);
-
+		//expand spline using their normal,expand assume spline in the center and expand thickess
 		auto expandedSpline = ExpandSpline(spline_PolyData, spline_PolyData->GetNumberOfPoints() - 1, stepSize);
 		// Sweep the line to form a surface.
 		double direction[3];
@@ -2882,6 +2883,8 @@ void DentalAccuracy::on_pushButton_splineAndPanorama_clicked()
 		unsigned cols = 250;
 
 		double distance = cols * segLength;
+		//force every spline to generate a wall cross z with quads
+		//then the col spacing is depends on spline sample rate,the row spacing is depends on segLength
 		auto surface =
 			SweepLine_2Sides(expandedSpline, direction, distance, cols);
 
@@ -2937,7 +2940,7 @@ void DentalAccuracy::on_pushButton_splineAndPanorama_clicked()
 		auto probePointData = probeData->GetPointData();
 
 		auto tmpArray = probePointData->GetScalars();
-
+		//经过vtkProbeFilter的结果其采样是曲面，下面要摆直
 		auto testimageData = vtkImageData::New();
 		testimageData->SetDimensions(cols + 1, spline_PolyData->GetNumberOfPoints(), 1);
 		//testimageData->SetDimensions( spline_PolyData->GetNumberOfPoints(), cols + 1, 1);
@@ -2958,6 +2961,7 @@ void DentalAccuracy::on_pushButton_splineAndPanorama_clicked()
 
 	append->Update();
 	auto appenedImage = append->GetOutput();
+	//设置为采样的spacing
 	appenedImage->SetSpacing(segLength, segLength, segLength);
 	// appenedImage->SetSpacing(1, 1, 1);
 
@@ -3074,7 +3078,7 @@ vtkSmartPointer<vtkPolyData> DentalAccuracy::ExpandSpline(vtkPolyData* line, int
 		z_axis[2] = 1;
 
 		Eigen::Vector3d ptpVector;
-
+		//caculate normal direction
 		if (i == (line->GetNumberOfPoints() - 1))
 		{
 			ptpVector[0] = -line->GetPoint(i - 1)[0] + currentPoint[0];
