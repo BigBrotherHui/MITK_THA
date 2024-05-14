@@ -39,7 +39,9 @@ found in the LICENSE file.
 #include <array>
 #include <cassert>
 #include <set>
-
+#include <vtkAppendPolyData.h>
+#include <vtkSphereSource.h>
+#include <vtkConeSource.h>
 namespace
 {
   /// Some simple interval arithmetic
@@ -143,7 +145,7 @@ namespace
   };
 }
 
-// mitk::PlaneGeometryDataMapper2D::AllInstancesContainer mitk::PlaneGeometryDataMapper2D::s_AllInstances;
+//mitk::PlaneGeometryDataMapper2D::AllInstancesContainer mitk::PlaneGeometryDataMapper2D::s_AllInstances;
 
 // input for this mapper ( = PlaneGeometryData)
 const mitk::PlaneGeometryData *mitk::PlaneGeometryDataMapper2D::GetInput() const
@@ -188,27 +190,21 @@ void mitk::PlaneGeometryDataMapper2D::GenerateDataForRenderer(mitk::BaseRenderer
 
   // Collect all other PlaneGeometryDatas that are being mapped by this mapper
   m_OtherPlaneGeometries.clear();
-
   for (auto it = s_AllInstances.begin(); it != s_AllInstances.end(); ++it)
   {
     Self *otherInstance = *it;
-
     // Skip ourself
     if (otherInstance == this)
       continue;
-
     mitk::DataNode *otherNode = otherInstance->GetDataNode();
     if (!otherNode)
       continue;
-
     // Skip other PlaneGeometryData nodes that are not visible on this renderer
     if (!otherNode->IsVisible(renderer))
       continue;
-
     auto *otherData = dynamic_cast<PlaneGeometryData *>(otherNode->GetData());
     if (!otherData)
       continue;
-
     auto *otherGeometry = dynamic_cast<PlaneGeometry *>(otherData->GetPlaneGeometry());
     if (otherGeometry && !dynamic_cast<AbstractTransformGeometry *>(otherData->GetPlaneGeometry()))
     {
@@ -273,7 +269,6 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
       {
         return;
       }
-
       point1 = crossLine.GetPoint1();
       point2 = crossLine.GetPoint2();
 
@@ -296,6 +291,7 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
       ScalarType lineLength = point1.EuclideanDistanceTo(point2);
       ScalarType gapInMM = gapSize * renderer->GetScaleFactorMMPerDisplayUnit();
       float gapSizeParam = gapInMM / lineLength;
+      vtkSmartPointer<vtkAppendPolyData> append = vtkSmartPointer<vtkAppendPolyData>::New();
 
       if (gapSize != 0)
       {
@@ -308,7 +304,6 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
             ++otherPlanesIt;
             continue;
           }
-
           auto *otherPlaneGeometry = static_cast<PlaneGeometry *>(
             static_cast<PlaneGeometryData *>((*otherPlanesIt)->GetData())->GetPlaneGeometry());
 
@@ -334,15 +329,31 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
           ++otherPlanesIt;
         }
       }
-
+      bool added[2]{false, false};
+      mitk::Point3D pt[2];
       for (const auto &interval : intervals.getIntervals())
       {
         this->DrawLine(crossLine.GetPoint(interval.GetLowerBoundary()),
                        crossLine.GetPoint(interval.GetUpperBoundary()),
                        lines,
                        points);
+        mitk::Point3D p1 = crossLine.GetPoint(interval.GetLowerBoundary());
+        mitk::Point3D p2 = crossLine.GetPoint(interval.GetUpperBoundary());
+        if (added[0])
+        {
+          
+          pt[1] = p1;
+          added[0] = false;
+        }
+        
+        if (!added[1])
+        {
+          added[1] = true;
+          added[0] = true;
+          pt[0] = p2;
+        }
       }
-
+      
       // Add the points to the dataset
       linesPolyData->SetPoints(points);
       // Add the lines to the dataset
@@ -352,9 +363,36 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
       orthogonalVector = inputPlaneGeometry->GetNormal();
       worldPlaneGeometry->Project(orthogonalVector, orthogonalVector);
       orthogonalVector.Normalize();
+      
+      append->AddInputData(linesPolyData);
 
+      static bool flag = false;
+      if (!flag)
+      {
+        double d = 1e-6;
+        if (std::abs(pt[0][0]) > d || std::abs(pt[0][1]) > d || std::abs(pt[0][2]) > d)
+        {
+          if (std::abs(pt[1][0]) > d || std::abs(pt[1][1]) > d || std::abs(pt[1][2]) > d)
+          {
+            mitk::Point3D center;
+            for (int i = 0; i < 3; ++i)
+              center[i] = (pt[0][i] + pt[1][i]) / 2;
+            vtkSmartPointer<vtkConeSource> source = vtkSmartPointer<vtkConeSource>::New();
+            source->SetDirection(orthogonalVector.data());
+            source->SetRadius(10);
+            source->SetCapping(1);
+            source->SetCenter(center[0], center[1], center[2]);
+            source->SetHeight(30);
+            source->Update();
+            append->AddInputData(source->GetOutput());
+          }
+        }
+      }
+      flag = !flag;
+      
+      append->Update();
       // Visualize
-      ls->m_Mapper->SetInputData(linesPolyData);
+      ls->m_Mapper->SetInputData(append->GetOutput());
       ls->m_CrosshairActor->SetMapper(ls->m_Mapper);
 
       // Determine if we should draw the area covered by the thick slicing, default is false.

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>567</width>
-    <height>681</height>
+    <width>693</width>
+    <height>821</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -23,7 +23,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
@@ -453,8 +453,8 @@
         <rect>
          <x>9</x>
          <y>9</y>
-         <width>197</width>
-         <height>265</height>
+         <width>199</width>
+         <height>278</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
@@ -521,8 +521,8 @@
         <rect>
          <x>9</x>
          <y>338</y>
-         <width>249</width>
-         <height>25</height>
+         <width>319</width>
+         <height>30</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_10">
@@ -631,7 +631,7 @@
          <x>70</x>
          <y>70</y>
          <width>287</width>
-         <height>25</height>
+         <height>30</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -654,13 +654,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>90</x>
          <y>170</y>
-         <width>243</width>
-         <height>40</height>
+         <width>301</width>
+         <height>47</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_10">

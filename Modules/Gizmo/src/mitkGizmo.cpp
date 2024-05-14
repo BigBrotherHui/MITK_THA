@@ -214,7 +214,7 @@ mitk::DataNode::Pointer mitk::Gizmo::AddGizmoToNode(DataNode *node, DataStorage 
 }
 
 mitk::Gizmo::Gizmo()
-  : Surface(), m_AllowTranslation(true), m_AllowRotation(true), m_AllowScaling(true), m_GizmoRemover(new GizmoRemover())
+  : Surface(), m_AllowTranslation(true), m_AllowRotation(true), m_AllowScaling(false), m_GizmoRemover(new GizmoRemover())
 {
   m_Center.Fill(0);
 
