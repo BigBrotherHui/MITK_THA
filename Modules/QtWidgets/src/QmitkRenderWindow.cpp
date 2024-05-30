@@ -240,10 +240,10 @@ bool QmitkRenderWindow::event(QEvent* e)
     }
   }
 
-  if (updateStatusBar)
-  {
-    this->UpdateStatusBar(mousePosition);
-  }
+  //if (updateStatusBar)
+  //{
+  //  this->UpdateStatusBar(mousePosition);
+  //}
 
   return QVTKOpenGLNativeWidget::event(e);
 }
