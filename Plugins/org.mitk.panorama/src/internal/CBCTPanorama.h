@@ -33,7 +33,7 @@
 #include <string>
 
 // CBCT像素类型使用short
-typedef int DCMPixelType;
+typedef short DCMPixelType;
 // PNG像素类型使用unsigned char
 typedef unsigned char PNGPixelType;
 //标签类型数值使用unsigned short

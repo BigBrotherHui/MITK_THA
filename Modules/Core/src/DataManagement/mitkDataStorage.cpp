@@ -284,7 +284,7 @@ mitk::TimeGeometry::ConstPointer mitk::DataStorage::ComputeBoundingGeometry3D(co
         node->IsOn(boolPropertyKey, renderer) && node->IsOn(boolPropertyKey2, renderer))
     {
       const TimeGeometry *timeGeometry = node->GetData()->GetUpdatedTimeGeometry();
-
+  
       if (timeGeometry != nullptr)
       {
         // bounding box (only if non-zero)

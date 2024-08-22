@@ -12,7 +12,7 @@ endif()
 set(_exclude_plugins
 
 )
-
+SET(MY_APP_NAME "MITK-GEM")
 mitkFunctionCreateBlueBerryApplication(
   NAME ${MY_APP_NAME}
   DESCRIPTION "MITK - ${MY_APP_NAME} Application"

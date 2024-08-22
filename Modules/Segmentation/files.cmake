@@ -69,6 +69,10 @@ set(CPP_FILES
 #Added from ML
   Controllers/mitkSliceBasedInterpolationController.cpp
   Algorithms/mitkSurfaceStampImageFilter.cpp
+
+  Interactions/mitkCorrectorTool2D.cpp
+  Interactions/mitkCreateSurfaceTool.cpp
+  Interactions/mitkFastMarchingTool.cpp
 )
 
 set(RESOURCE_FILES

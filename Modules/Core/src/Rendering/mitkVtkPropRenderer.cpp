@@ -170,6 +170,7 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
     this->PropagateRenderInfoToMappers();
   }
 
+  int index{0};
   // go through the generated list and let the sorted mappers paint
   for (auto it = m_MappersMap.cbegin(); it != m_MappersMap.cend(); it++)
   {
